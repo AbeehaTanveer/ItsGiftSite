@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useAppState } from '../../context/AppStateContext';
 import { useTypewriter } from '../../hooks/useTypewriter';
 
-const LETTER_TEXT = `Hey Zameer,
+const LETTER_TEXT = `Hi Zameer,
 Here is your official welcome gift. I hope you like it. If you don’t, I honestly don’t care, but we both know that is impossible. My taste is flawless, and you are lucky to experience it.
 
 We are officially friends now, but my boundaries are strictly non-negotiable. Cheap things have no boundaries because anyone can access them, but valuable things are always protected. I truly want to see you become incredibly successful in life, and success requires discipline.

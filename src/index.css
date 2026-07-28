@@ -204,3 +204,25 @@
 .animate-screen-slide-in-right {
   animation: screen-slide-in-right 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
+
+
+@keyframes rain-petal {
+  0% {
+    transform: translateY(-10vh) rotate(0deg) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg) translateX(20px);
+    opacity: 0;
+  }
+}
+
+.animate-rain-petal {
+  animation: rain-petal linear infinite;
+}

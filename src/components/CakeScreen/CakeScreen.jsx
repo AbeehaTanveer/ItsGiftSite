@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAppState } from '../../context/AppStateContext';
 import CakeIllustration from '../shared/CakeIllustration';
-import FallingGifts from "../shared/FallingGifts.jsx";
+import FallingGifts from "../shared/FallingPetals";
 import MascotGiftDelivery from '../shared/MascotGiftDelivery';
 
 // How long the "someone took a bite" effect plays before the cake is
