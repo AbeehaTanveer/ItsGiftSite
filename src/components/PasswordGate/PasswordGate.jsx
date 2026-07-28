@@ -4,8 +4,8 @@ import CuteMascotBoy from '../shared/CuteMascotBoy';
 import HintModal from './HintModal';
 import WrongPinScreen from './WrongPinScreen';
 
-// const SECRET_KEY = '272146619';
-const SECRET_KEY = '111111111'; // For testing purposes only — change this to the real secret key in production.
+const SECRET_KEY = '272146619';
+// const SECRET_KEY = '111111111'; // For testing purposes only — change this to the real secret key in production.
 const MAX_PIN_LENGTH = SECRET_KEY.length;
 
 const KEYPAD_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'enter'];
@@ -70,18 +70,7 @@ export default function PasswordGate() {
       {/* Mascot side */}
       <div className="flex-none md:flex-1 min-h-0 flex flex-col items-center justify-center gap-2 sm:gap-3 px-4 pt-4 pb-2 sm:py-2">
         <CuteMascotBoy className="w-[clamp(96px,28vh,340px)] h-[clamp(96px,28vh,340px)]" />
-        <div
-          className="relative bg-white rounded-2xl px-4 sm:px-5 py-2.5 sm:py-3 shadow-md"
-          style={{ color: 'var(--color-text)' }}
-        >
-          <p
-            style={{ fontFamily: 'var(--font-display)' }}
-            className="text-sm sm:text-base md:text-lg font-semibold text-center"
-          >
-            Enter the secret code~
-          </p>
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 md:hidden" />
-        </div>
+     
       </div>
 
       {/* PIN display + keypad side */}
