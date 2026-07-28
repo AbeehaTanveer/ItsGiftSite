@@ -3,16 +3,19 @@ import { useAppState } from '../../context/AppStateContext';
 import { useTypewriter } from '../../hooks/useTypewriter';
 
 const LETTER_TEXT = `Hi Zameer,
-Here is your official welcome gift. I hope you like it. If you don’t, I honestly don’t care, but we both know that is impossible. My taste is flawless, and you are lucky to experience it.
 
-We are officially friends now, but my boundaries are strictly non-negotiable. Cheap things have no boundaries because anyone can access them, but valuable things are always protected. I truly want to see you become incredibly successful in life, and success requires discipline.
+This is your official welcome gift. I hope you like it. But if you don't... well, I still think my choice is perfect. 😌
 
-This brings us to my absolute first rule. The exact second a girl enters your life or you start catching feelings, I get the exclusive first report. No secrets and no delays. A smart person knows that a hidden truth eventually becomes a loud lie, and I don’t tolerate lies.
+Now we are officially friends. That means one thing: respect my boundaries. Good people always have boundaries, and I am one of them.
 
-Enjoy the gift, Zameer. Stay smart, match my energy, and never make me regret picking you.
+My first rule is very simple. The day you start liking a girl, or a girl comes into your life, I want to know first. No hiding. No late updates. I like honesty more than excuses.
 
-Best,
-AZ`;
+I really want to see you do well in life. Work hard, stay focused, and don't lose yourself for anyone.
+
+Enjoy your gift. Match my energy, stay real, and don't make me regret choosing you as my friend.
+
+— AZ 🤍
+`;
 
 export default function TypewriterLetter() {
   const { goToNextStep } = useAppState();

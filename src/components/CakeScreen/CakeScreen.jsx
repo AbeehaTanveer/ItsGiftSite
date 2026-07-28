@@ -1,20 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useAppState } from '../../context/AppStateContext';
 import CakeIllustration from '../shared/CakeIllustration';
-import FallingGifts from "../shared/FallingPetals";
+import FallingPetals from "../shared/FallingPetals";
 import MascotGiftDelivery from '../shared/MascotGiftDelivery';
 
-// How long the "someone took a bite" effect plays before the cake is
-// swapped out for the gift delivery.
 const EAT_DURATION_MS = 900;
-// Must match the animation duration inside MascotGiftDelivery — used to
-// know when the mascot has finished walking off so the basket becomes
-// tappable and the note appears.
 const DELIVERY_DURATION_MS = 3500;
-// How long the "take me" note stays on screen before fading away by itself.
 const NOTE_VISIBLE_DURATION_MS = 3000;
-
-// Name shown in the curved cake text — update this for whoever the app is for.
 const FRIEND_NAME = 'Zameer';
 
 export default function CakeScreen() {
@@ -24,14 +16,23 @@ export default function CakeScreen() {
   const [hasOpenedGift, setHasOpenedGift] = useState(false);
   const [isBasketReady, setIsBasketReady] = useState(false);
   const [showNote, setShowNote] = useState(false);
+  const [showHearts, setShowHearts] = useState([]);
 
   const handleCakeTap = () => {
     if (isBeingEaten || hasOpenedGift) return;
 
-    // Play the "bite taken out of it" effect first...
     setIsBeingEaten(true);
 
-    // ...then swap the cake out for the gift delivery once that finishes.
+    // Generate floating hearts on bite
+    const hearts = Array.from({ length: 10 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 60 + 20,
+      y: Math.random() * 40 + 10,
+      delay: Math.random() * 0.3,
+      size: Math.random() * 20 + 16,
+    }));
+    setShowHearts(hearts);
+
     setTimeout(() => {
       setHasOpenedGift(true);
     }, EAT_DURATION_MS);
@@ -40,8 +41,6 @@ export default function CakeScreen() {
   useEffect(() => {
     if (!hasOpenedGift) return undefined;
 
-    // Once the mascot has walked off and left the basket behind: the
-    // basket becomes tappable, and the note pops up...
     const readyTimer = setTimeout(() => {
       setIsBasketReady(true);
       setShowNote(true);
@@ -53,8 +52,6 @@ export default function CakeScreen() {
   useEffect(() => {
     if (!showNote) return undefined;
 
-    // ...and disappears again on its own after a few seconds (the basket
-    // stays tappable either way).
     const hideNoteTimer = setTimeout(() => {
       setShowNote(false);
     }, NOTE_VISIBLE_DURATION_MS);
@@ -64,7 +61,7 @@ export default function CakeScreen() {
 
   return (
     <div
-      className="fixed inset-0 z-40 flex flex-col items-center justify-center overflow-hidden animate-screen-slide-in-right"
+      className="fixed inset-0 z-40 flex flex-col items-center justify-center overflow-hidden"
       style={{
         background:
           'radial-gradient(circle at 50% 0%, var(--color-bg-soft), var(--color-bg) 70%)',
@@ -72,12 +69,10 @@ export default function CakeScreen() {
       }}
     >
       <div className="relative flex-1 min-h-0 w-full flex flex-col items-center justify-center gap-4 px-6 overflow-hidden">
-        {/* Scoped keyframes for the "someone took a bite" effect and the
-            note's fade in/out. */}
         <style>{`
           @keyframes biteMarkPop {
-            0% { transform: scale(0); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
           }
           .bite-mark {
             animation: biteMarkPop 0.22s ease-out forwards;
@@ -88,9 +83,9 @@ export default function CakeScreen() {
 
           @keyframes cakeDevoured {
             0% { transform: scale(1) rotate(0deg); opacity: 1; }
-            30% { transform: scale(1.04) rotate(-2deg); opacity: 1; }
-            60% { transform: scale(0.9) rotate(2deg); opacity: 1; }
-            100% { transform: scale(0.55) rotate(0deg); opacity: 0; }
+            30% { transform: scale(1.08) rotate(-3deg); opacity: 1; }
+            60% { transform: scale(0.9) rotate(3deg); opacity: 1; }
+            100% { transform: scale(0.5) rotate(5deg); opacity: 0; }
           }
           .cake-being-eaten {
             animation: cakeDevoured ${EAT_DURATION_MS}ms ease-in forwards;
@@ -105,14 +100,67 @@ export default function CakeScreen() {
           .note-fade {
             animation: noteFade ${NOTE_VISIBLE_DURATION_MS}ms ease-in-out forwards;
           }
+
+          @keyframes floatHeart {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.5) rotate(20deg); opacity: 0; }
+          }
+          .float-heart {
+            animation: floatHeart 1.2s ease-out forwards;
+          }
+
+          @keyframes cakeBounce {
+            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            60% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+            80% { transform: scale(0.95) rotate(-1deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+          }
+          .cake-bounce-in {
+            animation: cakeBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          }
+
+          @keyframes sparkleTwinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+          }
+          .sparkle-twinkle {
+            animation: sparkleTwinkle 2s ease-in-out infinite;
+          }
+
+          @keyframes gentleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+          }
+          .gentle-bounce {
+            animation: gentleBounce 2s ease-in-out infinite;
+          }
         `}</style>
 
-        {/* Gifts rain down continuously, for as long as this screen is up */}
-        <FallingGifts count={20} />
+        {/* Rose Petals falling instead of gifts */}
+        <FallingPetals count={25} />
 
-        {/* Once the bite effect finishes: the mascot walks in carrying the
-            basket, sets it down center-stage, then walks off — leaving the
-            basket behind, tappable, once isBasketReady is true. */}
+        {/* Floating Hearts on bite */}
+        {showHearts.map((heart) => (
+          <div
+            key={heart.id}
+            className="absolute pointer-events-none float-heart"
+            style={{
+              left: `${heart.x}%`,
+              top: `${heart.y}%`,
+              fontSize: `${heart.size}px`,
+              animationDelay: `${heart.delay}s`,
+            }}
+          >
+            {['❤️', '💖', '💕', '💗', '💝'][heart.id % 5]}
+          </div>
+        ))}
+
+        {/* Decorative Sparkles */}
+        <div className="absolute top-10 left-10 text-2xl sparkle-twinkle">✨</div>
+        <div className="absolute top-10 right-10 text-2xl sparkle-twinkle" style={{ animationDelay: '0.5s' }}>✨</div>
+        <div className="absolute bottom-20 left-5 text-xl sparkle-twinkle" style={{ animationDelay: '1s' }}>⭐</div>
+        <div className="absolute bottom-20 right-5 text-xl sparkle-twinkle" style={{ animationDelay: '1.5s' }}>⭐</div>
+
         <MascotGiftDelivery
           active={hasOpenedGift}
           name={FRIEND_NAME}
@@ -121,49 +169,81 @@ export default function CakeScreen() {
         />
 
         {!hasOpenedGift && (
-          <button
-            type="button"
-            onClick={handleCakeTap}
-            aria-label="Take a bite of the cake"
-            className={`relative bg-transparent border-0 p-0 ${
-              isBeingEaten ? 'cake-being-eaten' : 'animate-cake-drop-in'
-            }`}
-          >
-            <CakeIllustration
-              name={FRIEND_NAME}
-              className="w-[clamp(260px,60vh,460px)] h-auto"
-            />
+          <>
+            {/* Cute Header */}
+            <div className="text-center space-y-1 z-10 gentle-bounce">
+              <p className="text-sm uppercase tracking-[0.3em] text-rose-400/70">
+                🎂 Something Special
+              </p>
+              <p className="text-xs text-rose-400/50 animate-pulse">
+                Tap the cake to take a bite... 👆
+              </p>
+            </div>
 
-            {isBeingEaten && (
-              <>
-                {/* Bite cutouts near the top-right of the cake, colored to
-                    match the page background so they read as "missing" bites. */}
-                <div
-                  className="absolute rounded-full bite-mark"
-                  style={{
-                    top: '18%',
-                    right: '16%',
-                    width: '18%',
-                    aspectRatio: '1 / 1',
-                    background: 'var(--color-bg-soft)',
-                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.15)',
-                  }}
-                />
-                <div
-                  className="absolute rounded-full bite-mark-small"
-                  style={{
-                    top: '26%',
-                    right: '10%',
-                    width: '9%',
-                    aspectRatio: '1 / 1',
-                    background: 'var(--color-bg-soft)',
-                    boxShadow: 'inset 0 2px 3px rgba(0,0,0,0.15)',
-                  }}
-                />
-              </>
+            <button
+              type="button"
+              onClick={handleCakeTap}
+              aria-label="Take a bite of the cake"
+              className={`relative bg-transparent border-0 p-0 ${
+                isBeingEaten ? 'cake-being-eaten' : 'cake-bounce-in'
+              }`}
+            >
+              <CakeIllustration
+                name={FRIEND_NAME}
+                className="w-[clamp(240px,55vh,420px)] h-auto"
+              />
+
+              {isBeingEaten && (
+                <>
+                  <div
+                    className="absolute rounded-full bite-mark"
+                    style={{
+                      top: '18%',
+                      right: '16%',
+                      width: '18%',
+                      aspectRatio: '1 / 1',
+                      background: 'var(--color-bg-soft)',
+                      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.15)',
+                    }}
+                  />
+                  <div
+                    className="absolute rounded-full bite-mark-small"
+                    style={{
+                      top: '26%',
+                      right: '10%',
+                      width: '9%',
+                      aspectRatio: '1 / 1',
+                      background: 'var(--color-bg-soft)',
+                      boxShadow: 'inset 0 2px 3px rgba(0,0,0,0.15)',
+                    }}
+                  />
+                  
+                  {/* Cute Yum! Emoji */}
+                  <div className="absolute -top-12 right-0 text-4xl animate-bounce">
+                    😋
+                  </div>
+                </>
+              )}
+
+              {!isBeingEaten && (
+                <>
+                  <div className="absolute -top-4 -right-4 text-3xl animate-pulse">💫</div>
+                  <div className="absolute -bottom-2 -left-4 text-2xl animate-pulse" style={{ animationDelay: '0.5s' }}>🌸</div>
+                </>
+              )}
+            </button>
+
+            {/* Bottom cute message */}
+            {!isBeingEaten && (
+              <p className="text-xs text-rose-400/40 mt-1">
+                Go ahead, take a bite! 🍰
+              </p>
             )}
-          </button>
+          </>
         )}
+
+   
+
 
         {showNote && (
           <div
