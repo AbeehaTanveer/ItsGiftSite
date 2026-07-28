@@ -1,0 +1,207 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap');
+
+:root {
+  /* Cricket jersey theme — blue & white, for Friendship Day */
+  --color-bg: #EFF4FA;
+  --color-bg-soft: #DCE8F5;
+  --color-primary: #1D5FBF;
+  --color-primary-dark: #123E80;
+  --color-secondary: #2E9E5B;
+  --color-accent-yellow: #F2B90F;
+  --color-text: #16233A;
+  --color-text-soft: #5C6C82;
+  --color-card: #FFFFFF;
+
+  --font-display: 'Baloo 2', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+@keyframes mascot-bob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes mascot-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.1); }
+}
+
+@keyframes pin-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bear-wobble {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+
+@keyframes bonk-arm {
+  0%, 100% { transform: rotate(-55deg); }
+  35% { transform: rotate(-55deg); }
+  50% { transform: rotate(15deg); }
+  65% { transform: rotate(-55deg); }
+}
+
+@keyframes bonk-recipient {
+  0%, 45% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(6px) rotate(-6deg); }
+  60% { transform: translateY(-2px) rotate(3deg); }
+  70%, 100% { transform: translateY(0) rotate(0deg); }
+}
+
+@keyframes bonk-impact {
+  0%, 45% { transform: scale(0); opacity: 0; }
+  52% { transform: scale(1.2); opacity: 1; }
+  65% { transform: scale(0.8); opacity: 1; }
+  75%, 100% { transform: scale(0); opacity: 0; }
+}
+
+@keyframes dazed-swirl {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes float-text {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+.animate-bonk-arm {
+  animation: bonk-arm 1.6s ease-in-out infinite;
+  transform-origin: 30px 10px;
+}
+
+.animate-bonk-recipient {
+  animation: bonk-recipient 1.6s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.animate-bonk-impact {
+  animation: bonk-impact 1.6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-dazed-swirl {
+  animation: dazed-swirl 1.2s linear infinite;
+  transform-origin: center;
+}
+
+.animate-float-text {
+  animation: float-text 2.2s ease-in-out infinite;
+}
+
+.animate-mascot-bob {
+  animation: mascot-bob 2.6s ease-in-out infinite;
+}
+
+.animate-mascot-blink {
+  animation: mascot-blink 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-pin-pop {
+  animation: pin-pop 0.28s ease-out;
+}
+
+@keyframes balloon-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-14px) rotate(3deg); }
+}
+
+@keyframes arm-extend {
+  0%, 100% { transform: rotate(0deg); }
+  100% { transform: rotate(-35deg); }
+}
+
+@keyframes flower-travel {
+  0% { transform: translateX(0) rotate(0deg); }
+  100% { transform: translateX(70px) rotate(20deg); }
+}
+
+@keyframes heart-pop {
+  0% { transform: scale(0) translateY(0); opacity: 0; }
+  40% { transform: scale(1.1) translateY(-6px); opacity: 1; }
+  100% { transform: scale(0.9) translateY(-24px); opacity: 0; }
+}
+
+.animate-balloon-float {
+  animation: balloon-float 3.4s ease-in-out infinite;
+}
+
+.animate-arm-extend {
+  animation: arm-extend 0.7s ease-out forwards;
+  transform-origin: top center;
+}
+
+.animate-flower-travel {
+  animation: flower-travel 0.7s ease-out forwards;
+}
+
+.animate-heart-pop {
+  animation: heart-pop 1.2s ease-out forwards;
+}
+
+@keyframes door-slide-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes door-slide-right {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes gift-fall {
+  0% { transform: translateY(-40px) rotate(0deg); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(50deg); opacity: 1; }
+}
+
+.animate-door-slide-left {
+  animation: door-slide-left 0.8s ease-in forwards;
+}
+
+.animate-door-slide-right {
+  animation: door-slide-right 0.8s ease-in forwards;
+}
+
+.animate-gift-fall {
+  animation: gift-fall linear forwards;
+}
+
+@keyframes cake-drop-in {
+  0% { transform: translateY(-160%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-cake-drop-in {
+  animation: cake-drop-in 0.9s cubic-bezier(0.32, 0.1, 0.2, 1) forwards;
+}
+
+@keyframes screen-fade-in {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-screen-fade-in {
+  animation: screen-fade-in 0.5s ease-out forwards;
+}
+
+@keyframes screen-slide-in-right {
+  0% { opacity: 0; transform: translateX(60px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.animate-screen-slide-in-right {
+  animation: screen-slide-in-right 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
