@@ -1,214 +1,279 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAppState } from '../../context/AppStateContext';
 
 const FLOWER_GIF_URL = 'https://i.pinimg.com/originals/71/02/e1/7102e1771b31ce3665a3f15522a603b6.gif';
+const MESSAGE = "This little rose is here to make your day a bit sweeter... just for you 🌹";
 
 export default function RoseScreen() {
   const { goToNextStep } = useAppState();
-  const [isGiving, setIsGiving] = useState(false);
-  const [isLeaving, setIsLeaving] = useState(false);
-  const [floatingPetals, setFloatingPetals] = useState([]);
+  const [stage, setStage] = useState('ask'); // ask -> given -> leaving
+  const [noBtnPos, setNoBtnPos] = useState({ x: 0, y: 0 });
+  const [dodgeCount, setDodgeCount] = useState(0);
+  const [typedMsg, setTypedMsg] = useState('');
+  const [confetti, setConfetti] = useState([]);
+  const containerRef = useRef(null);
 
+  // Timer/interval ids are kept in refs (not effect state) so that setting
+  // `stage` later can't trigger a React effect-cleanup that cancels them
+  // early — that was the bug: `stage` was previously an effect dependency,
+  // so calling setStage('leaving') mid-sequence caused React to clean up
+  // the very effect that had scheduled the goToNextStep() timer, canceling
+  // it before it ever fired.
+  const typeIntervalRef = useRef(null);
+  const leaveTimerRef = useRef(null);
+  const nextTimerRef = useRef(null);
+
+  // Only responsible for cleanup on unmount — not tied to `stage`.
   useEffect(() => {
-    const petals = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      delay: Math.random() * 5,
-      size: Math.random() * 20 + 14,
-      duration: Math.random() * 4 + 6,
-      rotation: Math.random() * 360,
-    }));
-    setFloatingPetals(petals);
+    return () => {
+      clearInterval(typeIntervalRef.current);
+      clearTimeout(leaveTimerRef.current);
+      clearTimeout(nextTimerRef.current);
+    };
   }, []);
 
-  const handleGive = () => {
-    if (isGiving) return;
-    setIsGiving(true);
+  const handleYes = () => {
+    if (stage !== 'ask') return;
+    setStage('given');
 
-    setTimeout(() => {
-      setIsLeaving(true);
-    }, 1600);
+    const pieces = Array.from({ length: 28 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      delay: Math.random() * 0.6,
+      duration: Math.random() * 1.5 + 2,
+      emoji: ['🌸', '💗', '✨', '💕', '⭐'][Math.floor(Math.random() * 5)],
+      size: Math.random() * 14 + 14,
+      drift: (Math.random() - 0.5) * 80,
+    }));
+    setConfetti(pieces);
 
-    setTimeout(() => {
-      goToNextStep();
-    }, 2150);
+    let i = 0;
+    typeIntervalRef.current = setInterval(() => {
+      i++;
+      setTypedMsg(MESSAGE.slice(0, i));
+      if (i >= MESSAGE.length) clearInterval(typeIntervalRef.current);
+    }, 32);
+
+    // Same flow as before: brief pause, then leave, then move to the next
+    // page (cake screen). These now live in the click handler instead of a
+    // `stage`-dependent effect, so nothing cancels them early.
+    leaveTimerRef.current = setTimeout(() => setStage('leaving'), 2400);
+    nextTimerRef.current = setTimeout(() => goToNextStep(), 2950);
   };
+
+  const dodgeNo = () => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const maxX = rect.width * 0.26;
+    const maxY = rect.height * 0.1;
+    setNoBtnPos({
+      x: (Math.random() - 0.5) * 2 * maxX,
+      y: (Math.random() - 0.5) * 2 * maxY,
+    });
+    setDodgeCount((c) => c + 1);
+  };
+
+  const noLabels = ['No 🙅', 'You sure?', 'Try again 😏', 'Nope', 'Catch me first', 'Nice try', 'Never 😂', 'Give up?'];
 
   return (
     <div
+      ref={containerRef}
       className="fixed inset-0 z-40 overflow-hidden flex items-center justify-center"
       style={{
-        background: 'radial-gradient(circle at 50% 50%, #fff5f7, #ffe4e9 70%, #fddde6 100%)',
+        background: 'radial-gradient(circle at 50% 30%, #fff5f7, #ffe1ea 60%, #ffd0dd 100%)',
         fontFamily: 'var(--font-body)',
-        opacity: isLeaving ? 0 : 1,
-        transform: isLeaving ? 'scale(0.95)' : 'scale(1)',
+        opacity: stage === 'leaving' ? 0 : 1,
+        transform: stage === 'leaving' ? 'scale(0.95)' : 'scale(1)',
         transition: 'opacity 0.5s ease-in, transform 0.5s ease-in',
       }}
     >
       <style>{`
-        @keyframes floatPetal {
-          0% {
-            transform: translateY(100vh) rotate(0deg) scale(0.5);
-            opacity: 0;
-          }
-          10% {
-            opacity: 0.7;
-          }
-          90% {
-            opacity: 0.7;
-          }
-          100% {
-            transform: translateY(-10vh) rotate(${360 * 2}deg) scale(1);
-            opacity: 0;
-          }
+        @keyframes petalFall {
+          0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.6; }
+          90% { opacity: 0.6; }
+          100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
         }
-        .float-petal {
-          animation: floatPetal linear infinite;
-        }
+        .petal { animation: petalFall linear infinite; }
 
-        @keyframes gentleBounce {
+        @keyframes floatUpDown {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
+          50% { transform: translateY(-10px); }
         }
-        .gentle-bounce {
-          animation: gentleBounce 2.5s ease-in-out infinite;
+        .gif-float { animation: floatUpDown 3s ease-in-out infinite; }
+
+        @keyframes popIn {
+          0% { transform: scale(0.7); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
         }
+        .pop-in { animation: popIn 0.5s ease-out; }
+
+        @keyframes confettiFall {
+          0% { transform: translateY(-5vh) translateX(0) rotate(0deg); opacity: 0; }
+          15% { opacity: 1; }
+          100% { transform: translateY(70vh) translateX(var(--drift)) rotate(400deg); opacity: 0; }
+        }
+        .confetti-piece { animation: confettiFall ease-in forwards; }
+
+        @keyframes gentlePulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+        .pulse-btn { animation: gentlePulse 1.8s ease-in-out infinite; }
 
         @keyframes shimmer {
           0% { opacity: 0.4; transform: scale(0.95); }
           50% { opacity: 1; transform: scale(1.1); }
           100% { opacity: 0.4; transform: scale(0.95); }
         }
-        .shimmer {
-          animation: shimmer 3s ease-in-out infinite;
-        }
+        .shimmer { animation: shimmer 3s ease-in-out infinite; }
 
-        @keyframes floatHeart {
-          0% {
-            transform: translateY(0) scale(0.5);
-            opacity: 0;
-          }
-          20% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(-60px) scale(1.2);
-            opacity: 0;
-          }
+        .no-btn { transition: top 0.25s ease, left 0.25s ease; }
+
+        .gif-frame {
+          position: relative;
+          width: clamp(190px, 55vw, 300px);
+          margin: 0 auto;
         }
-        .float-heart {
-          animation: floatHeart 1.2s ease-out forwards;
+        .gif-glow {
+          position: absolute;
+          inset: -18%;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(251,196,213,0.55), rgba(248,164,200,0));
+          z-index: 0;
         }
       `}</style>
 
-      {/* Floating Petals Background */}
-      {floatingPetals.map((petal) => (
+      {Array.from({ length: 10 }).map((_, i) => (
         <div
-          key={petal.id}
-          className="absolute pointer-events-none float-petal"
+          key={i}
+          className="absolute pointer-events-none petal"
           style={{
-            left: `${petal.x}%`,
-            fontSize: `${petal.size}px`,
-            animationDelay: `${petal.delay}s`,
-            animationDuration: `${petal.duration}s`,
-            transform: `rotate(${petal.rotation}deg)`,
-            opacity: 0.35,
+            left: `${Math.random() * 100}%`,
+            fontSize: `${Math.random() * 14 + 12}px`,
+            animationDelay: `${Math.random() * 6}s`,
+            animationDuration: `${Math.random() * 4 + 7}s`,
           }}
         >
           🌸
         </div>
       ))}
 
-      {/* Decorative Shimmer Elements */}
-      <div className="absolute top-6 left-6 text-2xl shimmer">✨</div>
-      <div className="absolute top-6 right-6 text-2xl shimmer" style={{ animationDelay: '1s' }}>✨</div>
-      <div className="absolute bottom-6 left-6 text-xl shimmer" style={{ animationDelay: '2s' }}>💗</div>
-      <div className="absolute bottom-6 right-6 text-xl shimmer" style={{ animationDelay: '1.5s' }}>💖</div>
+      <div className="absolute top-5 left-5 text-xl shimmer">✨</div>
+      <div className="absolute top-5 right-5 text-xl shimmer" style={{ animationDelay: '1s' }}>✨</div>
 
-      {/* Main Content - Centered */}
-      <div className="flex flex-col items-center justify-center gap-3 px-4 max-w-md mx-auto relative z-10">
-        
-        {/* Small Label */}
-        <p className="text-[11px] uppercase tracking-[0.3em] text-rose-400/80 gentle-bounce">
-          For You ❤️
-        </p>
-        
-        {/* Main Heading */}
-        <h1
-          style={{ fontFamily: 'var(--font-display)' }}
-          className="text-3xl md:text-4xl font-bold text-rose-700"
-        >
-          {isGiving ? 'Here You Go! 🌸' : 'Please Take It, Bruh 🌹'}
-        </h1>
+      {stage === 'given' &&
+        confetti.map((c) => (
+          <div
+            key={c.id}
+            className="absolute pointer-events-none confetti-piece"
+            style={{
+              left: `${c.x}%`,
+              top: 0,
+              fontSize: `${c.size}px`,
+              animationDelay: `${c.delay}s`,
+              animationDuration: `${c.duration}s`,
+              '--drift': `${c.drift}px`,
+            }}
+          >
+            {c.emoji}
+          </div>
+        ))}
 
-        {/* Sub Text */}
-        {!isGiving && (
-          <p className="text-sm text-rose-400/70 animate-pulse">
-            Click the bear to accept the flower 💫
-          </p>
+      <div className="w-full max-w-[380px] px-5 flex flex-col items-center justify-center gap-3 text-center relative z-10">
+        {stage === 'ask' && (
+          <>
+            <p className="text-[11px] uppercase tracking-[0.3em] text-rose-400/80">
+              For You ❤️
+            </p>
+
+            <h1
+              style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.4rem, 6vw, 2rem)' }}
+              className="font-bold text-rose-700 leading-tight"
+            >
+              Please Take It, Bruh 🌹
+            </h1>
+
+            <p className="text-sm text-rose-400/70">
+              {dodgeCount === 0 ? 'Tap the flower to accept 💫' : `That button ran away ${dodgeCount} time${dodgeCount > 1 ? 's' : ''} 😅`}
+            </p>
+
+            <div className="gif-frame gif-float">
+              <div className="gif-glow" />
+              <img
+                src={FLOWER_GIF_URL}
+                alt="Bear holding out a flower"
+                className="w-full h-auto relative rounded-2xl block"
+                style={{ zIndex: 1, filter: 'drop-shadow(0 8px 24px rgba(225,29,94,0.25))' }}
+              />
+            </div>
+
+            <div className="relative w-full flex items-center justify-center gap-4 mt-2" style={{ minHeight: 60 }}>
+              <button
+                type="button"
+                onClick={handleYes}
+                className="pulse-btn"
+                style={{
+                  background: '#e11d5e',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '999px',
+                  padding: '12px 28px',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: '0 6px 20px rgba(225,29,94,0.35)',
+                }}
+              >
+                Take It! 💗
+              </button>
+
+              <button
+                type="button"
+                onClick={dodgeNo}
+                onMouseEnter={dodgeNo}
+                className="no-btn"
+                style={{
+                  position: dodgeCount > 0 ? 'absolute' : 'static',
+                  top: dodgeCount > 0 ? `calc(50% + ${noBtnPos.y}px)` : 'auto',
+                  left: dodgeCount > 0 ? `calc(50% + ${noBtnPos.x}px)` : 'auto',
+                  background: 'transparent',
+                  color: '#b45',
+                  border: '1.5px solid rgba(200,60,100,0.35)',
+                  borderRadius: '999px',
+                  padding: '10px 22px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                {noLabels[Math.min(dodgeCount, noLabels.length - 1)]}
+              </button>
+            </div>
+          </>
         )}
 
-        {/* GIF Button Container - Centered */}
-        <button
-          type="button"
-          onClick={handleGive}
-          aria-label="Give the flower"
-          className="relative group flex flex-col items-center gap-2 mt-2 transition-all duration-300 hover:scale-105 active:scale-95"
-          style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
-        >
-          {/* Soft Glowing Background Effect */}
-          <div 
-            className="absolute inset-0 -z-10 blur-3xl opacity-30 group-hover:opacity-50 transition-opacity duration-500"
-            style={{ 
-              background: 'radial-gradient(circle, #fbc4d5, #f8a4c8)',
-              borderRadius: '50%',
-              width: '150%',
-              height: '150%',
-              left: '-25%',
-              top: '-25%'
-            }}
-          />
-          
-          {/* GIF Image */}
-          <img
-            src={FLOWER_GIF_URL}
-            alt="Bear holding out a flower"
-            className="w-[clamp(200px,35vh,320px)] h-auto relative z-10 rounded-2xl"
-            style={{
-              transform: isGiving ? 'scale(1.1) rotate(3deg)' : 'scale(1) rotate(0deg)',
-              transition: 'transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              filter: isGiving 
-                ? 'drop-shadow(0 0 50px rgba(251,196,213,0.8))' 
-                : 'drop-shadow(0 0 30px rgba(251,196,213,0.3))'
-            }}
-          />
-          
-          {/* Floating Hearts on Give */}
-          {isGiving && (
-            <>
-              <span className="absolute -top-8 -left-6 text-3xl float-heart" style={{ animationDelay: '0s' }}>💖</span>
-              <span className="absolute -top-4 -right-6 text-2xl float-heart" style={{ animationDelay: '0.2s' }}>❤️</span>
-              <span className="absolute bottom-2 -left-10 text-2xl float-heart" style={{ animationDelay: '0.4s' }}>💕</span>
-              <span className="absolute bottom-4 -right-10 text-2xl float-heart" style={{ animationDelay: '0.6s' }}>💗</span>
-              <span className="absolute top-1/2 -left-12 text-xl float-heart" style={{ animationDelay: '0.8s' }}>✨</span>
-              <span className="absolute top-1/2 -right-12 text-xl float-heart" style={{ animationDelay: '1s' }}>⭐</span>
-            </>
-          )}
-          
-          {/* Cute Text Below GIF */}
-          <span 
-            className={`text-base font-medium transition-all duration-500 relative z-10 ${
-              isGiving ? 'text-rose-600 scale-110' : 'text-rose-500/90 animate-pulse'
-            }`}
-          >
-            {isGiving ? 'Take It! 🥰' : "Don't Be Shy, Take It 🤪"}
-          </span>
-        </button>
-
-        {/* Extra Message */}
-        {isGiving && (
-          <div className="mt-1 text-sm text-rose-500/80 animate-pulse">
-            It's All Yours! 💝
+        {stage !== 'ask' && (
+          <div className="pop-in flex flex-col items-center gap-3">
+            <div className="gif-frame">
+              <div className="gif-glow" />
+              <img
+                src={FLOWER_GIF_URL}
+                alt="Bear holding out a flower"
+                className="w-full h-auto relative rounded-2xl block"
+                style={{ zIndex: 1, filter: 'drop-shadow(0 0 40px rgba(251,196,213,0.8))' }}
+              />
+            </div>
+            <h1
+              style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.5rem, 6vw, 2.1rem)' }}
+              className="font-bold text-rose-700"
+            >
+              Here You Go! 🎉
+            </h1>
+            <p className="text-[15px] text-rose-600/90 leading-relaxed min-h-[3.5em] px-2">
+              {typedMsg}
+              <span className="opacity-50">{typedMsg.length < MESSAGE.length ? '|' : ''}</span>
+            </p>
           </div>
         )}
       </div>

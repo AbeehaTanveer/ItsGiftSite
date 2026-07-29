@@ -75,13 +75,7 @@ export default function PasswordGate() {
 
       {/* PIN display + keypad side */}
       <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-2.5 sm:gap-3 px-4 pb-4 pt-2 sm:py-2">
-        {/* Hey Genius Text */}
-        <div className="text-center animate-pulse">
-          <p className="text-xs sm:text-sm md:text-base font-medium text-rose-500/80"
-             style={{ fontFamily: 'var(--font-display)' }}>
-            Hey genius, I sure can do it! 💪
-          </p>
-        </div>
+    
 
         {/* PIN display */}
         <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 max-w-[280px] sm:max-w-sm">
